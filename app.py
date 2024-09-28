@@ -4,7 +4,7 @@ from flask_cors import CORS
 from fuzzywuzzy import fuzz
 
 # Đọc dữ liệu từ file Excel
-df = pd.read_excel('dataset_nike2.xlsx')
+df = pd.read_csv('dataset_nike2.csv')
 
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__)
