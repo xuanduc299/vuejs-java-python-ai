@@ -5,8 +5,10 @@ from fuzzywuzzy import fuzz
 
 # Đọc dữ liệu từ file Excel
 df = pd.read_csv('dataset_nike2.csv')
+# Đọc dữ liệu từ file Excel
+# df = pd.read_excel('dataset_nike2.xlsx')
+# df.to_csv('dataset_nike2.csv', encoding='utf-8', index=False)
 
-# Khởi tạo ứng dụng Flask
 app = Flask(__name__)
 CORS(app)
 
@@ -44,4 +46,4 @@ def api_get_description():
     return jsonify({"response": description})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True)
