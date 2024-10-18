@@ -1,4 +1,4 @@
-python_version==3.10.9
+python_version >= "3.10.9"
 blinker==1.7.0
 certifi==2024.8.30
 charset-normalizer==3.3.2
