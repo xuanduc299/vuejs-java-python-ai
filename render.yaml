@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: flask-app
+    env: python
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app" # Thay "app:app" bằng tên file Python và app Flask của bạn
+    pythonVersion: 3.10.9
+    autoDeploy: true
