@@ -11,9 +11,9 @@ import joblib
 import json
 
 # Đọc dữ liệu từ file CSV
-df = pd.read_csv('dataset_nike2.csv')
-# df = pd.read_excel('dataset_nike2.xlsx')
-# df.to_csv('dataset_nike2.csv', encoding='utf-8', index=False)
+# df = pd.read_csv('dataset_nike2.csv')
+df = pd.read_excel('dataset_nike2.xlsx')
+df.to_csv('dataset_nike2.csv', encoding='utf-8', index=False)
 
 # Kiểm tra và loại bỏ giá trị NaN trong cột 'product_name' và 'description'
 df.dropna(subset=['product_name', 'description'], inplace=True)
@@ -58,9 +58,79 @@ def get_top_products():
         
         top_product_list.append({
             "product_name": row['product_name'],
-            "image_url": image_url
+            "image_url": image_url,
+            "product_id": row['product_id'],
+            "slug": row['slug']
         })
     
+    return top_product_list
+
+def get_top_nike_products():
+    # Lọc các sản phẩm có nhãn hàng "Nike"
+    nike_products = df[df['brand'].str.contains('Nike', case=False, na=False)]
+    
+    # Sắp xếp theo cột "rating" giảm dần và lấy 2 sản phẩm đầu tiên
+    top_nike_products = nike_products.sort_values(by='rating', ascending=False).head(2)
+    
+    # Danh sách kết quả sản phẩm
+    top_product_list = []
+    for _, row in top_nike_products.iterrows():
+        # Kiểm tra nếu cột 'images' không phải là NaN và là chuỗi hợp lệ
+        if pd.notna(row['images']) and isinstance(row['images'], str):
+            try:
+                # Chuyển đổi chuỗi JSON của images thành danh sách
+                images = json.loads(row['images'])
+                
+                # Lấy ảnh đầu tiên nếu danh sách không rỗng
+                image_url = images[0] if images else None
+            except json.JSONDecodeError:
+                image_url = None
+        else:
+            image_url = None
+        
+        # Thêm sản phẩm vào danh sách với tên và ảnh đầu tiên
+        top_product_list.append({
+            "product_name": row['product_name'],
+            "image_url": image_url,
+            "product_id": row['product_id'],
+            "slug": row['slug']
+        })
+    
+    # Trả về danh sách sản phẩm dưới dạng JSON
+    return top_product_list
+
+def get_top_adidas_products():
+    # Lọc các sản phẩm có nhãn hàng "Adidas"
+    adidas_products = df[df['brand'].str.contains('Adidas', case=False, na=False)]
+    
+    # Sắp xếp theo cột "rating" giảm dần và lấy 2 sản phẩm đầu tiên
+    top_adidas_products = adidas_products.sort_values(by='rating', ascending=False).head(2)
+    
+    # Danh sách kết quả sản phẩm
+    top_product_list = []
+    for _, row in top_adidas_products.iterrows():
+        # Kiểm tra nếu cột 'images' không phải là NaN và là chuỗi hợp lệ
+        if pd.notna(row['images']) and isinstance(row['images'], str):
+            try:
+                # Chuyển đổi chuỗi JSON của images thành danh sách
+                images = json.loads(row['images'])
+                
+                # Lấy ảnh đầu tiên nếu danh sách không rỗng
+                image_url = images[0] if images else None
+            except json.JSONDecodeError:
+                image_url = None
+        else:
+            image_url = None
+        
+        # Thêm sản phẩm vào danh sách với tên và ảnh đầu tiên
+        top_product_list.append({
+            "product_name": row['product_name'],
+            "image_url": image_url,
+            "product_id": row['product_id'],
+            "slug": row['slug']
+        })
+    
+    # Trả về danh sách sản phẩm dưới dạng JSON
     return top_product_list
 
 # Hàm lấy giá sản phẩm (không thay đổi)
@@ -68,6 +138,24 @@ def get_sale_price(product_name):
     for index, row in df.iterrows():
         if fuzz.partial_ratio(product_name.lower(), row['product_name'].lower()) > 70:
             return row['sale_price']
+    return None
+
+def get_tong_sp(product_name):
+    for index, row in df.iterrows():
+        if fuzz.partial_ratio(product_name.lower(), row['product_name'].lower()) > 70:
+            return row['tong_sp']
+    return None
+
+def get_chat_lieu(product_name):
+    for index, row in df.iterrows():
+        if fuzz.partial_ratio(product_name.lower(), row['product_name'].lower()) > 70:
+            return row['chat_lieu']
+    return None
+
+def get_cong_nghe(product_name):
+    for index, row in df.iterrows():
+        if fuzz.partial_ratio(product_name.lower(), row['product_name'].lower()) > 70:
+            return row['cong_nghe']
     return None
 
 # Hàm sử dụng mô hình học máy để dự đoán mô tả sản phẩm
@@ -101,7 +189,9 @@ def get_product_info_by_name(product_name):
                 image_url = None
             _product_list.append({
                 "product_name": row['product_name'],
-                "image_url": image_url
+                "image_url": image_url,
+                "product_id": row['product_id'],
+                "slug": row['slug']
             })
             # Trả về thông tin sản phẩm
             return _product_list
@@ -110,7 +200,8 @@ def get_product_info_by_name(product_name):
 
 def get_description(product_name):
     # Kiểm tra từ khóa "sản phẩm nổi bật"
-    if "sản phẩm nổi bật" in product_name.lower():
+    # if "" in product_name.lower():
+    if any(keyword in product_name.lower() for keyword in ["sản phẩm nổi bật", "mẫu giày nổi bật"]):
         top_products = get_top_products()
         return {"top_products": top_products}
     
@@ -123,6 +214,34 @@ def get_description(product_name):
             return {"response": f"Giá của {product_name_cleaned} là {sale_price} VND."}
         else:
             return {"response": "Sản phẩm không được tìm thấy."}
+        
+    if  any(keyword in product_name.lower() for keyword in ["số lượng", "còn"]):
+        product_name_cleaned = product_name.lower()
+        tong_sp = get_tong_sp(product_name_cleaned)
+        
+        if tong_sp:
+            return {"response": "Sản phẩm này hiện đang còn hàng, bạn có muốn biết thêm thông tin gì về sản phẩm này không?"}
+        else:
+            return {"response": "Hiện tại sản phẩm này đã hết hàng, cảm ơn quý khách"}
+        
+    if  any(keyword in product_name.lower() for keyword in ["chất liệu giày"]):
+        product_name_cleaned = product_name.lower()
+        chat_lieu = get_chat_lieu(product_name_cleaned)
+        
+        if chat_lieu:
+            return {"response": f"Chất liệu của {product_name_cleaned}là {chat_lieu}."}
+        else:
+            return {"response": "Sản phẩm chưa dc tìm thấy chất liệu."}
+    
+    if  any(keyword in product_name.lower() for keyword in ["công nghệ giày"]):
+        product_name_cleaned = product_name.lower()
+        cong_nghe = get_cong_nghe(product_name_cleaned)
+        
+        if cong_nghe:
+            return {"response": f"Công nghệ của {product_name_cleaned}là {cong_nghe}."}
+        else:
+            return {"response": "Sản phẩm chưa dc tìm thấy công nghệ."}
+        
     
       # Kiểm tra từ khóa "mô tả"
     if "mô tả" in product_name.lower():
@@ -132,9 +251,19 @@ def get_description(product_name):
                 return {"response": f"Mô tả của {row['product_name']} là: {row['description']}"}
         return {"response": "Sản phẩm không được tìm thấy."}
     
+     # Kiểm tra từ khóa "Nike" và "bán chạy" hoặc "nổi bật"
+    if "nike" in product_name.lower() and any(keyword in product_name.lower() for keyword in ["bán chạy", "yêu thích"]):
+        top_nike_products = get_top_nike_products()
+        return {"top_nike_products": top_nike_products}
+    
+     # Kiểm tra từ khóa "Adidas" và "bán chạy" hoặc "nổi bật"
+    if "adidas" in product_name.lower() and any(keyword in product_name.lower() for keyword in ["bán chạy", "yêu thích"]):
+        top_adidas_products = get_top_adidas_products()
+        return {"top_adidas_products": top_adidas_products}
+    
     
    # Nếu không có từ khóa "giá" hay "mô tả", kiểm tra tên sản phẩm
-    if any(keyword in product_name.lower() for keyword in ["giày", "mẫu", "sản phẩm"]):  # Thêm từ khóa phù hợp
+    if any(keyword in product_name.lower() for keyword in ["mẫu", "sản phẩm"]):  # Thêm từ khóa phù hợp
         product_info = get_product_info_by_name(product_name)
         
         if product_info:

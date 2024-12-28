@@ -170,3 +170,134 @@
 
 # if __name__ == '__main__':
 #     app.run(debug=True, host='0.0.0.0') 
+
+
+
+
+# import pandas as pd
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# from fuzzywuzzy import fuzz
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.model_selection import train_test_split
+# from sklearn.naive_bayes import MultinomialNB
+# import joblib
+# import json
+# import nltk
+# from nltk.corpus import wordnet
+
+# # Đọc dữ liệu từ file CSV
+# df = pd.read_excel('dataset_nike2.xlsx')
+
+# # Kiểm tra và loại bỏ giá trị NaN trong cột 'product_name' và 'description'
+# df.dropna(subset=['product_name', 'description'], inplace=True)
+
+# # Chuẩn bị dữ liệu để huấn luyện mô hình
+# X = df['product_name']
+# y = df['description']
+
+# # Chuyển đổi văn bản thành vectơ TF-IDF
+# vectorizer = TfidfVectorizer()
+# X_tfidf = vectorizer.fit_transform(X)
+
+# # Chia tập dữ liệu thành tập huấn luyện và tập kiểm tra
+# X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2, random_state=42)
+
+# # Huấn luyện mô hình Naive Bayes
+# model = MultinomialNB()
+# model.fit(X_train, y_train)
+
+# # Lưu mô hình đã huấn luyện và vectorizer
+# joblib.dump(model, 'product_model.pkl')
+# joblib.dump(vectorizer, 'tfidf_vectorizer.pkl')
+
+# # Khởi tạo ứng dụng Flask
+# app = Flask(__name__)
+# CORS(app)
+
+# # Hàm lấy sản phẩm nổi bật (không thay đổi)
+# def get_top_products():
+#     top_products = df.sort_values(by='rating', ascending=False).head(5)
+#     top_product_list = []
+#     for _, row in top_products.iterrows():
+#         if pd.notna(row['images']) and isinstance(row['images'], str):
+#             try:
+#                 images = json.loads(row['images'])
+#                 image_url = images[0] if images else None
+#             except json.JSONDecodeError:
+#                 image_url = None
+#         else:
+#             image_url = None
+#         top_product_list.append({
+#             "product_name": row['product_name'],
+#             "image_url": image_url,
+#             "product_id": row['product_id'],
+#             "slug": row['slug']
+#         })
+#     return top_product_list
+
+# # Hàm lấy danh sách từ đồng nghĩa
+# def get_synonyms(word):
+#     synonyms = set()
+    
+#     for syn in wordnet.synsets(word):
+#         for lemma in syn.lemmas():
+#             synonyms.add(lemma.name())  # Lấy tên của từ đồng nghĩa
+    
+#     return synonyms
+
+# # Hàm kiểm tra và bổ sung đồng nghĩa vào từ khóa tìm kiếm
+# def enhance_with_synonyms(product_name):
+#     words = product_name.split()
+#     enhanced_words = set(words)  # Tạo một tập các từ (set) để tránh trùng lặp
+    
+#     # Tìm đồng nghĩa cho mỗi từ và bổ sung vào bộ từ khóa
+#     for word in words:
+#         synonyms = get_synonyms(word)
+#         enhanced_words.update(synonyms)
+    
+#     return list(enhanced_words)
+
+# # Hàm tìm kiếm mô tả sản phẩm với từ đồng nghĩa
+# def get_description_with_synonyms(product_name):
+#     enhanced_keywords = enhance_with_synonyms(product_name.lower())  # Tìm từ đồng nghĩa và kết hợp
+    
+#     best_match = None
+#     highest_ratio = 0
+    
+#     # Duyệt qua các từ đồng nghĩa và tìm sản phẩm khớp nhất
+#     for index, row in df.iterrows():
+#         # Kiểm tra các từ khóa mở rộng với đồng nghĩa
+#         for keyword in enhanced_keywords:
+#             ratio = fuzz.partial_ratio(keyword.lower(), row['product_name'].lower())
+#             if ratio > highest_ratio:
+#                 highest_ratio = ratio
+#                 best_match = row['description']  # Lấy mô tả của sản phẩm khớp nhất
+    
+#     if highest_ratio > 70:
+#         return {"response": best_match}
+    
+#     # Nếu không tìm thấy mô tả phù hợp, sử dụng mô hình học máy dự đoán
+#     predicted_description = predict_description(product_name)
+    
+#     return {"response": predicted_description}
+
+# # Hàm dự đoán mô tả từ mô hình học máy
+# def predict_description(product_name):
+#     vectorized_input = vectorizer.transform([product_name])
+#     prediction = model.predict(vectorized_input)
+#     return prediction[0]
+
+# # API Flask để xử lý yêu cầu từ người dùng
+# @app.route('/chatbot/', methods=['POST'])
+# def api_get_description():
+#     data = request.json
+#     product_name = data.get('message', '')
+    
+#     description = get_description_with_synonyms(product_name)
+    
+#     return jsonify(description)
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
