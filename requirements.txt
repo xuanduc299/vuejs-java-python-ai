@@ -33,6 +33,8 @@ RapidFuzz==3.10.0
 regex==2024.9.11
 requests==2.32.3
 safetensors==0.4.5
+scikit-learn==1.2.2
+joblib==1.4.2
 torch==2.4.1
 torchaudio==2.4.1
 torchvision==0.19.1
@@ -42,6 +44,4 @@ typing_extensions==4.12.2
 tzdata==2024.2
 urllib3==2.2.3
 Werkzeug==3.0.1
-sklearn==1.5.2
-joblib==1.4.2
 gunicorn
