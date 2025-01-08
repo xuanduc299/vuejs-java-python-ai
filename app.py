@@ -21,7 +21,7 @@ df.dropna(subset=['product_name', 'description'], inplace=True)
 X = df['product_name']
 y = df['description']
 
-# Chuyển đổi văn bản thành vectơ TF-IDF
+# Chuyển đổi văn bản thành vectơ TF-IDFgit
 vectorizer = TfidfVectorizer()
 X_tfidf = vectorizer.fit_transform(X)
 
