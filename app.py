@@ -11,7 +11,7 @@ import json
 
 # Đọc dữ liệu từ file CSV
 df = pd.read_csv('dataset_nike2.csv')
-# df = pd.read_excel('dataset_nike2.xlsx')
+# df = pd.read_excel('dataset_nike2.xlsx') 
 # df.to_csv('dataset_nike2.csv', encoding='utf-8', index=False)
 
 # Kiểm tra và loại bỏ giá trị NaN trong cột 'product_name' và 'description'
